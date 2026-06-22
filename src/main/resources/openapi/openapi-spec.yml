@@ -1,7 +1,11 @@
 openapi: 3.0.0
 servers:
-  - description: API Marketplace - api-cp-crime-hearing (mocking example)
-    url: https://virtserver.swaggerhub.com/HMCTS-DTS/api-cp-crime-hearing/1.0.0
+  - description: CP Crime Hearing API
+    url: https://api-cp-crime-hearing.net/{version}
+    variables:
+      version:
+        default: 1.0.0
+        description: API version; matches the spec info.version
 
 info:
   title: CP Crime Hearing API
