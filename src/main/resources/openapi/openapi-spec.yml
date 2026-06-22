@@ -1,11 +1,17 @@
 openapi: 3.0.0
 servers:
-  - description: API Marketplace api - mocking example api
-    url: https://virtserver.swaggerhub.com/HMCTS-DTS/api-hmcts-crime-template/1.0.0
+  - description: API Marketplace - api-cp-crime-hearing (mocking example)
+    url: https://virtserver.swaggerhub.com/HMCTS-DTS/api-cp-crime-hearing/1.0.0
 
 info:
-  title: API Marketplace api - example api
-  description: API Marketplace api - simple example
+  title: CP Crime Hearing API
+  description: >-
+    Exposes hearing lifecycle data via three read APIs to support downstream
+    consumers across Remand and Sentencing (RaS) and HMPPS / Prison services.
+
+    The APIs provide the chronological view of a case (case timeline),
+    defendant attendance at a hearing, and defendant identity resolution
+    scoped to a specific hearing and case.
   version: 1.0.0
   contact:
     email: no-reply@hmcts.com
@@ -13,75 +19,484 @@ info:
     name: MIT
     url: 'https://opensource.org/licenses/MIT'
 
+security:
+  - oAuthJwt: []
+
+tags:
+  - name: hearings
+    description: Hearing lifecycle data — case timeline, defendant attendance, and defendants/offences
+
 paths:
-  /:
+  /hearings/cases/{caseURN}/timeline:
     get:
-      description: Root endpoint
-      operationId: getRoot
+      summary: Get the case timeline
+      description: >-
+        Returns the full chronological sequence of hearing events for a given
+        case. Each hearing includes the hearing date, time, court name, court
+        room, hearing type, and outcome. If the case has no hearings, an empty
+        list is returned.
+      operationId: getCaseTimeline
       tags:
-        - root
-
-      responses:
-        '200':
-          description: OK
-          content:
-            text/plain:
-              schema:
-                type: string
-                example: Hello
-
-  /example/{example_id}:
-    get:
-      description: Get example for example_id
-      operationId: getExampleByExampleId
-      tags:
-        - examples
+        - hearings
       parameters:
         - in: path
-          name: example_id
+          name: caseURN
           required: true
-          description: Unique id for the example - long
+          description: Unique Case URN identifying the case
           schema:
-            type: integer
-            format: int64
+            type: string
+          example: "20GD1234567"
       responses:
         '200':
-          description:  Examples found
+          description: Case timeline found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ExampleResponse"
+                $ref: "#/components/schemas/HearingTimelineView"
+              examples:
+                timeline:
+                  summary: Case with hearings in chronological order
+                  value:
+                    hearingSummaries:
+                      - id: "f1d2c3b4-a5e6-4f7a-8b9c-0d1e2f3a4b5c"
+                        date: "2026-05-14"
+                        type: "First hearing"
+                        courtHouse: "Birmingham Magistrates' Court"
+                        courtRoom: "Court room 1"
+                        time: "10:00"
+                        startTime: "10:15"
+                        outcome: "Sent to Crown Court"
+                      - id: "a9b8c7d6-e5f4-4321-9876-0a1b2c3d4e5f"
+                        date: "2026-06-30"
+                        type: "Plea and trial preparation hearing"
+                        courtHouse: "Birmingham Crown Court"
+                        courtRoom: "Court room 4"
+                        time: "09:30"
+                        startTime: "09:45"
+                        outcome: "Adjourned"
+                    nextAppearance:
+                      id: "NA_a9b8c7d6-e5f4-4321-9876-0a1b2c3d4e5f"
+                      court: "Birmingham Crown Court"
+                      date: "2026-06-30"
+                      time: "09:30"
+                      type: "Plea and trial preparation hearing"
+                      hearingId: "a9b8c7d6-e5f4-4321-9876-0a1b2c3d4e5f"
+                empty:
+                  summary: Case exists but has no hearings
+                  value:
+                    hearingSummaries: []
+                    nextAppearance: null
         '400':
-          description: Bad input parameter
+          $ref: "#/components/responses/BadRequest"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '403':
+          $ref: "#/components/responses/Forbidden"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        '500':
+          $ref: "#/components/responses/InternalServerError"
+
+  /hearings/{hearingId}/attendance:
+    get:
+      summary: Get defendant attendance for a hearing
+      description: >-
+        Returns the attendance details for each defendant at a specific
+        hearing. Each defendant's record includes the date and how they
+        attended — in person, by video link, or did not appear. A defendant may
+        have attendance recorded across multiple days for the same hearing. If
+        the hearing has no attendance data, an empty list is returned.
+      operationId: getDefendantAttendance
+      tags:
+        - hearings
+      parameters:
+        - in: path
+          name: hearingId
+          required: true
+          description: Unique identifier of the hearing
+          schema:
+            type: string
+            format: uuid
+          example: "f1d2c3b4-a5e6-4f7a-8b9c-0d1e2f3a4b5c"
+      responses:
+        '200':
+          description: Defendant attendance found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/DefendantAttendanceView"
+              examples:
+                attendance:
+                  summary: Attendance recorded across multiple days
+                  value:
+                    id: "f1d2c3b4-a5e6-4f7a-8b9c-0d1e2f3a4b5c"
+                    defendants:
+                      - id: "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95"
+                        attendanceDays:
+                          - day: "2026-05-14"
+                            type: "IN_PERSON"
+                          - day: "2026-05-15"
+                            type: "VIDEO_LINK"
+                      - id: "df799de4-f4b9-4de0-8315-9262655c68d5"
+                        attendanceDays:
+                          - day: "2026-05-14"
+                            type: "DID_NOT_APPEAR"
+                empty:
+                  summary: Hearing exists but has no attendance data
+                  value:
+                    id: "f1d2c3b4-a5e6-4f7a-8b9c-0d1e2f3a4b5c"
+                    defendants: []
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '403':
+          $ref: "#/components/responses/Forbidden"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        '500':
+          $ref: "#/components/responses/InternalServerError"
+
+  /hearings/{hearingId}/cases/{caseURN}/defendants:
+    get:
+      summary: Get defendants and offences for a hearing and case
+      description: >-
+        Returns the defendant details scoped to a specific hearing and case.
+        Each defendant includes their full name, date of birth, and a list of
+        offences. Each offence includes the offence code, title, and current
+        status. A defendant may have multiple offences. If the case has no
+        defendants, an empty list is returned.
+      operationId: getDefendants
+      tags:
+        - hearings
+      parameters:
+        - in: path
+          name: hearingId
+          required: true
+          description: Unique identifier of the hearing
+          schema:
+            type: string
+            format: uuid
+          example: "f1d2c3b4-a5e6-4f7a-8b9c-0d1e2f3a4b5c"
+        - in: path
+          name: caseURN
+          required: true
+          description: Unique Case URN identifying the case
+          schema:
+            type: string
+          example: "20GD1234567"
+        - in: query
+          name: masterDefendantId
+          required: false
+          description: >-
+            Master defendant identifier used to resolve the defendant identity
+            for the specific appearance.
+          schema:
+            type: string
+            format: uuid
+          example: "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95"
+      responses:
+        '200':
+          description: Defendants found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DefendantView"
+              examples:
+                defendants:
+                  summary: Defendant with multiple offences
+                  value:
+                    - id: "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95"
+                      name: "John Doe"
+                      dateOfBirth: "1980-01-31"
+                      offences:
+                        - id: "c4a1b2d3-e5f6-4789-9abc-0d1e2f3a4b5c"
+                          code: "TH68001"
+                          title: "Theft from a shop"
+                          status: "Convicted"
+                        - id: "d5b2c3e4-f6a7-489a-bcd0-1e2f3a4b5c6d"
+                          code: "CD80001"
+                          title: "Criminal damage"
+                          status: "Awaiting plea"
+                empty:
+                  summary: Case exists but has no defendants
+                  value: []
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '403':
+          $ref: "#/components/responses/Forbidden"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        '500':
+          $ref: "#/components/responses/InternalServerError"
 
 components:
+  securitySchemes:
+    oAuthJwt:
+      type: oauth2
+      description: >-
+        OAuth 2.0 protection. Callers must present a valid JWT bearer access
+        token obtained via the client credentials flow.
+      flows:
+        clientCredentials:
+          tokenUrl: https://idam.hmcts.net/oauth2/token
+          scopes:
+            hearing.read: Read access to hearing lifecycle data
+
+  responses:
+    BadRequest:
+      description: Bad input parameter
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: "BAD_REQUEST"
+            message: "The supplied hearingId is not a valid UUID"
+            details:
+              parameter: "hearingId"
+            timestamp: "2026-06-22T11:33:22.794Z"
+            traceId: "b2f1c3d4e5f60718"
+    Unauthorized:
+      description: Authentication is missing or the access token is invalid
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: "UNAUTHORIZED"
+            message: "Access token is missing or invalid"
+            timestamp: "2026-06-22T11:33:22.794Z"
+            traceId: "c3a2b4d5e6f70819"
+    Forbidden:
+      description: The access token does not grant the required scope
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: "FORBIDDEN"
+            message: "The access token does not grant the required scope hearing.read"
+            timestamp: "2026-06-22T11:33:22.794Z"
+            traceId: "d4b3c5e6f708192a"
+    NotFound:
+      description: The requested resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: "NOT_FOUND"
+            message: "No case found for the supplied case URN"
+            details:
+              caseURN: "20GD1234567"
+            timestamp: "2026-06-22T11:33:22.794Z"
+            traceId: "e5c4d6f708192a3b"
+    InternalServerError:
+      description: An unexpected error occurred
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: "INTERNAL_SERVER_ERROR"
+            message: "An unexpected error occurred while processing the request"
+            timestamp: "2026-06-22T11:33:22.794Z"
+            traceId: "f6d5e708192a3b4c"
+
   schemas:
-    ExampleResponse:
-      description: Details of examples associated with the example id
+    HearingTimelineView:
+      description: Chronological sequence of hearing events for a case
       type: object
       properties:
-        exampleId:
-          description: Id of the example - long
-          type: integer
-          format: int64
-        exampleText:
-          description: Information associated with the example id
+        hearingSummaries:
+          description: Hearings for the case in chronological order
+          type: array
+          items:
+            $ref: "#/components/schemas/HearingSummaryView"
+        nextAppearance:
+          $ref: "#/components/schemas/NextAppearance"
+
+    HearingSummaryView:
+      description: Summary of a single hearing event
+      type: object
+      properties:
+        id:
+          description: Unique identifier of the hearing
           type: string
-          example: "Some text"
+          format: uuid
+          example: "f1d2c3b4-a5e6-4f7a-8b9c-0d1e2f3a4b5c"
+        date:
+          description: Date of the hearing
+          type: string
+          format: date
+          example: "2026-05-14"
+        type:
+          description: Type of hearing
+          type: string
+          example: "First hearing"
+        courtHouse:
+          description: Name of the court house
+          type: string
+          example: "Birmingham Magistrates' Court"
+        courtRoom:
+          description: Court room in which the hearing was held
+          type: string
+          example: "Court room 1"
+        time:
+          description: Scheduled time of the hearing
+          type: string
+          example: "10:00"
+        startTime:
+          description: Actual start time of the hearing
+          type: string
+          example: "10:15"
+        outcome:
+          description: Outcome of the hearing
+          type: string
+          example: "Adjourned"
+
+    NextAppearance:
+      description: The next scheduled appearance following a given hearing
+      type: object
+      properties:
+        id:
+          description: Identifier of the next appearance record
+          type: string
+          example: "NA_f1d2c3b4-a5e6-4f7a-8b9c-0d1e2f3a4b5c"
+        court:
+          description: Name of the court house for the next appearance
+          type: string
+          example: "Birmingham Crown Court"
+        date:
+          description: Date of the next appearance
+          type: string
+          format: date
+          example: "2026-06-30"
+        time:
+          description: Time of the next appearance
+          type: string
+          example: "09:30"
+        type:
+          description: Type of the next hearing
+          type: string
+          example: "Trial"
+        hearingId:
+          description: Identifier of the next hearing
+          type: string
+          format: uuid
+          example: "a9b8c7d6-e5f4-4321-9876-0a1b2c3d4e5f"
+
+    DefendantAttendanceView:
+      description: Attendance details for each defendant at a hearing
+      type: object
+      properties:
+        id:
+          description: Unique identifier of the hearing
+          type: string
+          format: uuid
+          example: "f1d2c3b4-a5e6-4f7a-8b9c-0d1e2f3a4b5c"
+        defendants:
+          description: Attendance records per defendant
+          type: array
+          items:
+            $ref: "#/components/schemas/DefendantAttendance"
+
+    DefendantAttendance:
+      description: Attendance record for a single defendant
+      type: object
+      properties:
+        id:
+          description: Unique identifier of the defendant
+          type: string
+          format: uuid
+          example: "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95"
+        attendanceDays:
+          description: Attendance recorded across one or more days
+          type: array
+          items:
+            $ref: "#/components/schemas/AttendanceDay"
+
+    AttendanceDay:
+      description: How a defendant attended on a given day
+      type: object
+      properties:
+        day:
+          description: Date the attendance relates to
+          type: string
+          format: date
+          example: "2026-05-14"
+        type:
+          description: How the defendant attended on this day
+          type: string
+          enum:
+            - IN_PERSON
+            - VIDEO_LINK
+            - DID_NOT_APPEAR
+          example: "IN_PERSON"
+
+    DefendantView:
+      description: Defendant identity and offences scoped to a hearing and case
+      type: object
+      properties:
+        id:
+          description: Unique identifier of the defendant for this appearance
+          type: string
+          format: uuid
+          example: "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95"
+        name:
+          description: Full name of the defendant
+          type: string
+          example: "John Doe"
+        dateOfBirth:
+          description: Date of birth of the defendant
+          type: string
+          format: date
+          example: "1980-01-31"
+        offences:
+          description: Offences associated with the defendant
+          type: array
+          items:
+            $ref: "#/components/schemas/OffenceView"
+
+    OffenceView:
+      description: A single offence and its current status
+      type: object
+      properties:
+        id:
+          description: Unique identifier of the offence
+          type: string
+          format: uuid
+          example: "c4a1b2d3-e5f6-4789-9abc-0d1e2f3a4b5c"
+        code:
+          description: Offence code
+          type: string
+          example: "TH68001"
+        title:
+          description: Offence title
+          type: string
+          example: "Theft from a shop"
+        status:
+          description: Current status of the offence
+          type: string
+          example: "Convicted"
 
     ErrorResponse:
+      description: Standard error response
       type: object
       properties:
         error:
           type: string
           description: Machine-readable error code
+          example: "NOT_FOUND"
         message:
           type: string
           description: Human-readable error message
+          example: "No case found for the supplied case URN"
         details:
           type: object
           additionalProperties: true
@@ -89,6 +504,8 @@ components:
         timestamp:
           type: string
           format: date-time
+          example: "2026-06-22T11:33:22.794Z"
         traceId:
           type: string
           description: Unique identifier for error tracing
+          example: "b2f1c3d4e5f60718"
