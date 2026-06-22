@@ -89,7 +89,6 @@ paths:
                   summary: Case exists but has no hearings
                   value:
                     hearingSummaries: []
-                    nextAppearance: null
         '400':
           $ref: "#/components/responses/BadRequest"
         '401':
@@ -247,7 +246,7 @@ components:
         token obtained via the client credentials flow.
       flows:
         clientCredentials:
-          tokenUrl: https://idam.hmcts.net/oauth2/token
+          tokenUrl: https://api-cp-crime-hearing.net/oauth2/token
           scopes:
             hearing.read: Read access to hearing lifecycle data
 
