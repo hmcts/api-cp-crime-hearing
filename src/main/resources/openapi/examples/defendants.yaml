@@ -1,0 +1,14 @@
+summary: Defendant with multiple offences
+value:
+  - id: "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95"
+    name: "John Doe"
+    dateOfBirth: "1980-01-31"
+    offences:
+      - id: "c4a1b2d3-e5f6-4789-9abc-0d1e2f3a4b5c"
+        code: "TH68001"
+        title: "Theft from a shop"
+        status: "Convicted"
+      - id: "d5b2c3e4-f6a7-489a-bcd0-1e2f3a4b5c6d"
+        code: "CD80001"
+        title: "Criminal damage"
+        status: "Awaiting plea"
