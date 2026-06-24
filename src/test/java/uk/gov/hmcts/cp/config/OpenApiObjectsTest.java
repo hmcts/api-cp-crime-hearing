@@ -31,7 +31,8 @@ class OpenApiObjectsTest {
 
     @Test
     void generated_defendant_view_should_have_expected_fields() {
-        assertThat(DefendantView.class).hasDeclaredFields("id", "name", "dateOfBirth", "offences");
+        assertThat(DefendantView.class)
+                .hasDeclaredFields("id", "masterDefendantId", "name", "dateOfBirth", "offences");
     }
 
     @Test

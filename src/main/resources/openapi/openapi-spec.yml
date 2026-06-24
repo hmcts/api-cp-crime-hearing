@@ -394,6 +394,13 @@ components:
           type: string
           format: uuid
           example: "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95"
+        masterDefendantId:
+          description: >-
+            Master defendant identifier used to resolve the defendant identity
+            across cases and appearances.
+          type: string
+          format: uuid
+          example: "a1f2e3d4-c5b6-4789-9abc-1d2e3f4a5b6c"
         name:
           description: Full name of the defendant
           type: string
