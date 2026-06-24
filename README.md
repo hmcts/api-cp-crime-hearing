@@ -1,6 +1,6 @@
 # api-cp-crime-hearing
 
-OpenAPI specification for the **CP Crime Hearing API** — a set of read APIs that expose hearing
+OpenAPI specification for the **Crime Hearing API** — a set of read APIs that expose hearing
 lifecycle data for criminal cases on the Common Platform (CP).
 
 > 🔗 API definitions follow the [HMCTS RESTful API Standards](https://hmcts.github.io/restful-api-standards/).

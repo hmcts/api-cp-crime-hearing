@@ -1,0 +1,14 @@
+summary: Attendance recorded across multiple days
+value:
+  id: "f1d2c3b4-a5e6-4f7a-8b9c-0d1e2f3a4b5c"
+  defendants:
+    - id: "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95"
+      attendanceDays:
+        - day: "2026-05-14"
+          type: "IN_PERSON"
+        - day: "2026-05-15"
+          type: "VIDEO_LINK"
+    - id: "df799de4-f4b9-4de0-8315-9262655c68d5"
+      attendanceDays:
+        - day: "2026-05-14"
+          type: "DID_NOT_APPEAR"

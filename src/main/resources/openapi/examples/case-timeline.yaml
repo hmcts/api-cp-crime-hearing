@@ -1,0 +1,26 @@
+summary: Case with hearings in chronological order
+value:
+  hearingSummaries:
+    - id: "f1d2c3b4-a5e6-4f7a-8b9c-0d1e2f3a4b5c"
+      date: "2026-05-14"
+      type: "First hearing"
+      courtHouse: "Birmingham Magistrates' Court"
+      courtRoom: "Court room 1"
+      time: "10:00"
+      startTime: "10:15"
+      outcome: "Sent to Crown Court"
+    - id: "a9b8c7d6-e5f4-4321-9876-0a1b2c3d4e5f"
+      date: "2026-06-30"
+      type: "Plea and trial preparation hearing"
+      courtHouse: "Birmingham Crown Court"
+      courtRoom: "Court room 4"
+      time: "09:30"
+      startTime: "09:45"
+      outcome: "Adjourned"
+  nextAppearance:
+    id: "NA_a9b8c7d6-e5f4-4321-9876-0a1b2c3d4e5f"
+    court: "Birmingham Crown Court"
+    date: "2026-06-30"
+    time: "09:30"
+    type: "Plea and trial preparation hearing"
+    hearingId: "a9b8c7d6-e5f4-4321-9876-0a1b2c3d4e5f"
