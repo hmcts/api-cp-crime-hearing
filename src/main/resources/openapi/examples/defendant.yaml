@@ -3,9 +3,8 @@ value:
   id: "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95"
   masterDefendantId: "a1f2e3d4-c5b6-4789-9abc-1d2e3f4a5b6c"
   name: "John Doe"
-  dateOfBirth: "1980-01-31"
   offences:
     - id: "c4a1b2d3-e5f6-4789-9abc-0d1e2f3a4b5c"
       code: "TH68001"
       title: "Theft from a shop"
-      status: "Convicted"
+      status: "GUILTY"
