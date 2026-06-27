@@ -180,6 +180,62 @@ paths:
         '500':
           $ref: "#/components/responses/InternalServerError"
 
+  /hearings/{hearingId}/cases/{caseURN}/defendants/{defendantId}:
+    get:
+      summary: Get a single defendant by ID for a hearing and case
+      description: >-
+        Returns the details of a single defendant identified by their
+        appearance-scoped ID within a specific hearing and case. Returns 404 if
+        the hearing does not exist or if no defendant with the given ID exists
+        on the case.
+      operationId: getDefendant
+      tags:
+        - hearings
+      parameters:
+        - in: path
+          name: hearingId
+          required: true
+          description: Unique identifier of the hearing
+          schema:
+            type: string
+            format: uuid
+          example: "f1d2c3b4-a5e6-4f7a-8b9c-0d1e2f3a4b5c"
+        - in: path
+          name: caseURN
+          required: true
+          description: Unique case reference identifying the case
+          schema:
+            type: string
+          example: "ABCD1234567"
+        - in: path
+          name: defendantId
+          required: true
+          description: Unique identifier of the defendant for this appearance
+          schema:
+            type: string
+            format: uuid
+          example: "30b83084-d2fe-4a70-bbd1-fae1dfdb4b95"
+      responses:
+        '200':
+          description: Defendant found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DefendantView"
+              examples:
+                defendant:
+                  $ref: "./examples/defendant.yaml"
+        '400':
+          $ref: "#/components/responses/BadRequest"
+        '401':
+          $ref: "#/components/responses/Unauthorized"
+        '403':
+          $ref: "#/components/responses/Forbidden"
+        '404':
+          $ref: "#/components/responses/NotFound"
+        '500':
+          $ref: "#/components/responses/InternalServerError"
+
 components:
   securitySchemes:
     oAuthJwt:
