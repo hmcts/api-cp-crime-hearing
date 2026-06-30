@@ -22,6 +22,8 @@ publish, per `docs/OPENAPI-SPEC-VERSIONING.md`)
 | `GET /hearings/{hearingId}/cases/{caseURN}/defendants` | 200, 400, 401, 403, 404, 500 |
 
 All operations are read-only and secured by OAuth2 client-credentials (`oAuthJwt`, scope `hearing.read`).
+`GET .../defendants` also accepts an optional `masterDefendantId` query parameter to filter the
+returned defendants by their persistent cross-case identity.
 
 ## Generated Interfaces & Schema
 
@@ -44,7 +46,7 @@ All operations are read-only and secured by OAuth2 client-credentials (`oAuthJwt
 | `DefendantAttendanceView` | Attendance records for all defendants at a hearing |
 | `DefendantAttendance` | Per-defendant attendance, across one or more days |
 | `AttendanceDay` | How a defendant attended on a given day (`IN_PERSON` / `VIDEO_LINK` / `DID_NOT_APPEAR`) |
-| `DefendantView` | Defendant identity and offences scoped to a hearing/case |
+| `DefendantView` | Defendant identity (`id`, `masterDefendantId`) and offences scoped to a hearing/case |
 | `OffenceView` | A single offence and its current status |
 | `ErrorResponse` | Standard error shape (`error`, `message`, `details`, `timestamp`, `traceId`) |
 
